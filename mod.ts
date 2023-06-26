@@ -1,3 +1,5 @@
+import { ConnInfo } from "./dev_depts.ts";
+
 export enum LogLevel {
   error = "error",
   warn = "warn",
@@ -15,15 +17,15 @@ export interface LoggerOptions {
 }
 
 const generateLog =
-  (req: Request, res: Response) =>
-  (logArray: string[], options?: LoggerOptions) => {
-    const url = req["originalUrl"] || req.url;
+  (req: Request, res: Response, connInfo?: ConnInfo) =>
+  (logArray: string[], options: LoggerOptions) => {
+    const url = req.url;
 
-    if (options?.output?.level)
-      logArray.push("[" + options.output?.level.toUpperCase() + "]");
-
-    if (options?.ip) logArray.push(req.headers.get("host") ?? "");
-
+    logArray.push(
+      "[" + (options.output?.level || LogLevel.log).toUpperCase() + "]"
+    );
+    if (options?.ip)
+      logArray.push((connInfo?.remoteAddr as Deno.NetAddr)?.hostname ?? "");
     logArray.push(res.status.toString());
     logArray.push(req.method.toUpperCase());
     logArray.push(url);
@@ -34,9 +36,10 @@ export const logger = (options: LoggerOptions) => {
     callback: console.log,
     level: LogLevel.log,
   };
-  return (req: Request, res: Response, next?: () => void) => {
+
+  return (req: Request, res: Response, connInfo?: ConnInfo) => {
     const args: string[] = [];
-    generateLog(req, res)(args, options);
+    generateLog(req, res, connInfo)(args, options);
     const logString = args.join(" ");
     output.callback(logString);
   };
