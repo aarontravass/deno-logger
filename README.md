@@ -1,4 +1,4 @@
-# deno-http-logger - A tiny, 0 Dependency http logger for Deno
+# http_logger - A tiny, 0 Dependency http logger for Deno
 
 ## Example
 ```ts
