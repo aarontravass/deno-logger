@@ -4,9 +4,9 @@ import { logger } from "./mod.ts";
 const port = 5000
 
 const app = new Server({
-  handler: (req) => {
+  handler: (req, connInfo) => {
     const res = new Response("hello", { status: 200 });
-    logger({ ip: true })(req, res);
+    logger({ ip: true })(req, res, connInfo);
     return res;
   },
   port: port
