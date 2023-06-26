@@ -19,16 +19,17 @@ export interface LoggerOptions {
 const generateLog =
   (req: Request, res: Response, connInfo?: ConnInfo) =>
   (logArray: string[], options: LoggerOptions) => {
-    const url = req.url;
+    const url = new URL(req.url);
 
     logArray.push(
       "[" + (options.output?.level || LogLevel.log).toUpperCase() + "]"
     );
+    
     if (options?.ip)
       logArray.push((connInfo?.remoteAddr as Deno.NetAddr)?.hostname ?? "");
     logArray.push(res.status.toString());
     logArray.push(req.method.toUpperCase());
-    logArray.push(url);
+    logArray.push(url.pathname);
   };
 
 export const logger = (options: LoggerOptions) => {

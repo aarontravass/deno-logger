@@ -1,7 +1,6 @@
-# deno-http-logger - A tiny, 0 Dependency http logger for Deno
+import { Server } from "./dev_depts.ts";
+import { logger } from "./mod.ts";
 
-## Example
-```ts
 const port = 5000
 
 const app = new Server({
@@ -15,4 +14,3 @@ const app = new Server({
 
 console.log(`Listening on localhost:${port}`)
 await app.listenAndServe()
-```
