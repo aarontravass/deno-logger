@@ -8,40 +8,61 @@ export enum LogLevel {
   log = "log",
 }
 
+export interface transporter {
+  callback?: (log: string) => void;
+  filename?: string;
+}
+
 export interface LoggerOptions {
-  output?: {
-    level?: LogLevel;
-    callback: (log: string) => void;
-  };
+  output?: transporter[];
   ip?: boolean;
+  level?: LogLevel;
+  userAgent?: boolean;
 }
 
 const generateLog =
   (req: Request, res: Response, connInfo?: ConnInfo) =>
-  (logArray: string[], options: LoggerOptions) => {
+  (logArray: (string | number)[], options?: LoggerOptions) => {
     const url = new URL(req.url);
 
-    logArray.push(
-      "[" + (options.output?.level || LogLevel.log).toUpperCase() + "]"
-    );
-    
+    logArray.push("[" + (options?.level ?? LogLevel.log).toUpperCase() + "]");
+
     if (options?.ip)
-      logArray.push((connInfo?.remoteAddr as Deno.NetAddr)?.hostname ?? "");
-    logArray.push(res.status.toString());
+      logArray.push((connInfo!.remoteAddr as Deno.NetAddr)?.hostname ?? "");
+    logArray.push(res.status);
     logArray.push(req.method.toUpperCase());
     logArray.push(url.pathname);
+    logArray.push(url.protocol.slice(0, -1));
+    if (options?.userAgent) logArray.push(req.headers.get("user-agent") ?? "");
   };
 
-export const logger = (options: LoggerOptions) => {
-  const output = options.output ?? {
-    callback: console.log,
-    level: LogLevel.log,
-  };
+/**
+ * @callback callback
+ * @param {string} log
+ * @returns 
+ */
+
+/**
+ * @param {boolean} options.ip displays the IP address of the request
+ * @param {string} options.level - displays the level
+ * @param {boolean} options.userAgent - displays the user-agent from header if it exists
+ * @param {Object[]} options.transporter - list of outputs to use
+ * @param {string=} options.transporter[].filename - file to output logs
+ * @param {callback} options.transporter[].callback - callback function
+ * @returns void
+ */
+export const logger = (options?: LoggerOptions) => {
+  const defaultOptions: transporter[] = [{ callback: console.log }];
+  const output = options?.output ?? defaultOptions;
+
+  const callBackList = output
+    .filter((o) => !!o.callback)
+    .map((o) => o.callback);
 
   return (req: Request, res: Response, connInfo?: ConnInfo) => {
     const args: string[] = [];
     generateLog(req, res, connInfo)(args, options);
-    const logString = args.join(" ");
-    output.callback(logString);
+    const logString = args.filter((x) => x.length).join(" ");
+    callBackList.forEach((cb) => cb!(logString));
   };
 };
