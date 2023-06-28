@@ -10,7 +10,7 @@ describe('Basic tests', () => {
     };
     const handler = (req: Request, connInfo: ConnInfo) => {
       const res = new Response('hello world', { status: 200 });
-      logger({ output: [{ callback }], ip: true })(req, res, connInfo);
+      logger({ transports: [{ callback }], ip: true })(req, res, connInfo);
       return res;
     };
     (await makeFetch(handler)('/')).expectStatus(200);
@@ -25,7 +25,7 @@ describe('Basic tests', () => {
     const handler = (req: Request, connInfo: ConnInfo) => {
       const res = new Response('hello world', { status: 200 });
       logger({
-        output: [{ callback: callback1 }, { callback: callback2 }],
+        transports: [{ callback: callback1 }, { callback: callback2 }],
       })(req, res, connInfo);
       return res;
     };

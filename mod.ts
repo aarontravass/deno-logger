@@ -9,12 +9,19 @@ export enum LogLevel {
   log = 'log',
 }
 
-export interface transporter {
+export interface Transporter {
   callback?: (log: string) => void;
 }
-
+/**
+ * Logger options
+ * @property ip
+ * @property level - Log level
+ * @property userAgent 
+ * @property filename
+ * @property transports
+ */
 export interface LoggerOptions {
-  output?: transporter[];
+  transports?: Transporter[];
   ip?: boolean;
   level?: LogLevel;
   userAgent?: boolean;
@@ -54,8 +61,8 @@ const generateLog =
  * @returns void
  */
 export const logger = (options?: LoggerOptions) => {
-  const defaultOptions: transporter[] = [{ callback: console.log }];
-  const output = options?.output ?? defaultOptions;
+  const defaultOptions: Transporter[] = [{ callback: console.log }];
+  const output = options?.transports ?? defaultOptions;
   let filelogger: FileLogger;
   if (options?.filename) {
     filelogger = new FileLogger(options.filename);
